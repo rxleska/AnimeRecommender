@@ -1,4 +1,4 @@
-# AnimeReconmender
+# AnimeRecommender
 
 Cumulative Anilist reconmender
 
