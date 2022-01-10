@@ -1,14 +1,6 @@
 import requests
-import json
-from PIL import Image, ImageDraw, ImageFilter
 from os import walk
 from numpy import asarray
-import glob
-import random
-import math
-import operator
-import tkinter as tk
-import queue
 
 from requests.models import requote_uri
 
