@@ -94,6 +94,28 @@ def generateGoodReconmendations(media):
     recs = reconmendationsToReadable(recs)
     return recs
 
+
+def generateGoodReconmendations(media, numberOfShows):
+    watched = []
+    listOfdicts = []
+
+    infin = False
+    if numberOfShows == -1:
+        infin = True
+
+    for ent in media:
+        watched.append(getTitleFromMediaDict(ent))
+        if infin or numberOfShows > 0:
+            listOfdicts.append(getRecsDict(ent))
+        numberOfShows -= 1
+
+    recs = combineDictionaries(listOfdicts)
+    del recs[None]
+    recs = removeWatched(watched, recs)
+    recs = sorted(recs.items(), key=lambda x: x[1], reverse=True)
+    recs = reconmendationsToReadable(recs)
+    return recs
+
     # Here we define our query as a multi-line string
 query = '''
 query ($name: String) { # Define which variables will be used in the query (id)
@@ -128,11 +150,11 @@ query ($name: String) { # Define which variables will be used in the query (id)
 
 
 print("type your anilist id:")
-input = input().__str__()
+nameId = input().__str__()
 
 # Define our query variables and values that will be used in the query request
 variables = {
-    'name': input
+    'name': nameId
 }
 
 # anilist public api url
@@ -145,12 +167,21 @@ js = response.json()
 # gets media elements from your anilist
 media = getMedia(js)
 
+
+# Ask for number of shows
+print("\ntype number of shows to consider in reconmendations\nType nothing to do all shows")
+nos = input("#Shows:")
+
+nos = -1 if not nos.isnumeric() else int(nos)
+print("\n\n\n")
+
 # combines and simplifies reconmendations
-recs = generateGoodReconmendations(media)
+recs = generateGoodReconmendations(media, nos)
 
 # read the line below and guess what it does
 print(recs)
 
 # prints reconmendations to a file
+recs = ("all" if nos == -1 else nos.__str__()) + " shows\n" + recs
 with open("out.txt", "w", encoding="utf-8") as f:
     f.write(recs.__str__())
