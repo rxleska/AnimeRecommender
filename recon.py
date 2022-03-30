@@ -6,6 +6,12 @@ from requests.models import requote_uri
 
 
 def returnNonDict(dict_var):
+    """
+    This function returns the closest non dictionary item in a line of dictionaries\n
+    Used to remove excess items in api response\n
+    :param dict_var: dictionary item or dictionary object\n
+    :return: assorted objected stored in given dictionary
+    """
     for k, v in dict_var:
         s = type(v)
         if s == 'dict_items':
@@ -16,20 +22,38 @@ def returnNonDict(dict_var):
             yield v
 
 
-def getList(jsRep):  # this looks dumb but it words and is only iterating once in each for loop
-    for x in returnNonDict(jsRep.items()):
-        for y in returnNonDict(x.items()):
-            for z in returnNonDict(y.items()):
-                return z
+def getList(jsonRes):
+    """
+    This function returns the show lists from the AniList query Response\n
+    :param jsRep: json response from anilist query\n
+    :return: list object of Media item arrays\n
+    """
+    return returnNonDict(
+        returnNonDict(
+            returnNonDict(
+                jsonRes.items()
+            ).__next__().items()
+        ).__next__().items()
+    ).__next__()
 
 
 def getMedia(jsonRes):
+    """
+    This function returns the watched show list from the AniList query Response\n
+    :param jsRep: json response from anilist query\n
+    :return: list object of Media items from watched list\n
+    """
     ls = getList(jsonRes)
     ls = list(ls[0].values())
     return ls[0]
 
 
 def getTitleFromMediaDict(dict_media):
+    """
+    Gets Title from Media Item\n
+    :param dict_media: Dictionary containing Information on a single show\n
+    :returns: Title String\n
+    """
     s = list(dict_media.values())[0]  # enter media
     s = list(s.values())[1]  # navigate to title
     s = list(s.values())
@@ -37,6 +61,11 @@ def getTitleFromMediaDict(dict_media):
 
 
 def getRecsDict(dict_media):  # returns dict of reconmendations title:rating
+    """
+    Gets Reconmendations from Media Item\n
+    :param dict_media: Dictionary containing Information on a single show\n
+    :returns:  Dictionary of reconmendation in title:rating format\n
+    """
     s = list(dict_media.values())[0]  # enter media
     s = list(s.values())[2]  # navigate to reconmendation object
     s = list(s.values())[0]  # to edges
@@ -53,6 +82,11 @@ def getRecsDict(dict_media):  # returns dict of reconmendations title:rating
 
 
 def combineDictionaries(dicts):
+    """
+    Combines Dictionaries\n
+    :param dicts: List of Dictionaries to be combined\n
+    :return: single dictionary\n
+    """
     finalDict = dict()
     for d in dicts:
         for k, v in d.items():
@@ -64,6 +98,12 @@ def combineDictionaries(dicts):
 
 
 def removeWatched(watched, recs):
+    """
+    Removed Watched Shows from reconmendation list\n
+    :param watched: list of watched titles\n
+    :param recs: dictionary of reconmendations\n
+    :return: new dictionary of reconmendations
+    """
     for t in watched:
         if t in recs:
             del recs[t]
@@ -71,6 +111,11 @@ def removeWatched(watched, recs):
 
 
 def reconmendationsToReadable(recons):
+    """
+    Converst Reconmendations into a readable format\n
+    :param recons: Dictionary of Reconmendations\n
+    :return: returns readable string of reconmendations 
+    """
     ret = ''
     for x in recons:
         k = x[0]
@@ -80,6 +125,11 @@ def reconmendationsToReadable(recons):
 
 
 def generateGoodReconmendations(media):
+    """
+    Gets and Sorts Reconmendations for easiest use\n
+    :param media: list of media items\n
+    :return: string of sorted reconmendations\n 
+    """
     watched = []
     listOfdicts = []
 
@@ -96,12 +146,19 @@ def generateGoodReconmendations(media):
 
 
 def generateGoodReconmendations(media, numberOfShows):
+    """
+    Gets and Sorts Reconmendations for easiest use\n
+    :param media: list of media items\n
+    :param numberOfShows: int of number of shows to be considered\n
+    this value will count from the highest rated show to the lowest\n
+    -1 will do all shows\n
+    _________________________________________________________________\n
+    :return: string of sorted reconmendations\n 
+    """
     watched = []
     listOfdicts = []
 
-    infin = False
-    if numberOfShows == -1:
-        infin = True
+    infin = True if numberOfShows == -1 else False
 
     for ent in media:
         watched.append(getTitleFromMediaDict(ent))
